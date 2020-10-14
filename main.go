@@ -65,8 +65,8 @@ func (app *App) runApplication() {
 	server := &http.Server{
 		Handler:      app.Router,
 		Addr:         app.Config.AppAddress + ":" + app.Config.AppPort,
-		WriteTimeout: 15 * time.Second,
-		ReadTimeout:  15 * time.Second,
+		WriteTimeout: (TIMEOUT * 1.5) * time.Second,
+		ReadTimeout:  (TIMEOUT * 1.5) * time.Second,
 	}
 	log.Fatal(server.ListenAndServe())
 }
