@@ -169,8 +169,8 @@ func (app *App) getById(collection string, bytes []byte) *mongo.SingleResult {
 	getClass - Will retrieve a class by a "class-id"
 	classList - Will return all the current classes from the database
 	storeAttempt - Will store an attempt from a student to a specified class
-    getAttemptsByDeviceId - Will receive attempts from a device based on its "device-id"
-    getDevices - Will return all the current devices from the database
+    	getAttemptsByDeviceId - Will receive attempts from a device based on its "device-id"
+    	getDevices - Will return all the current devices from the database
  */
 
 func (app *App) createClass(w http.ResponseWriter, r *http.Request) {
