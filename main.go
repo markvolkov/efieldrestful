@@ -166,7 +166,7 @@ func (app *App) createClass(w http.ResponseWriter, r *http.Request) {
 	mongoResult := app.getById("classes", []byte(classPayload.ClassId))
 	if mongoResult.Err() != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		result := app.insertOne("classes", classPayload)
 		json.NewEncoder(w).Encode(&result)
 	} else {
