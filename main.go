@@ -1,6 +1,10 @@
 package main
 
-//Author: Mark Volkov
+/**
+    ===================
+	Author: Mark Volkov
+    ===================
+ */
 
 import (
 	"context"
@@ -19,12 +23,13 @@ import (
 )
 
 const (
-	LAYOUT_US string = "January 2, 2006 3:04:05 PM"
-	TIMEOUT          = 10
+	TIMEOUT = 10
 )
 
 /**
+    =======================
 	Type Struct Definitions
+    =======================
  */
 
 type AppConfig struct {
@@ -51,7 +56,7 @@ type App struct {
 func (app *App) init(env string) {
 	app.Config = readValues(env)
 	app.Router = mux.NewRouter().StrictSlash(true)
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(app.Config.MongoURI))
 	checkError(err)
@@ -91,7 +96,9 @@ type Class struct {
 }
 
 /**
+    ========================
 	Json Encoders / Decoders
+    ========================
  */
 
 func decodeAttempt(r *http.Request) *Attempt {
@@ -107,12 +114,14 @@ func decodeClass(r *http.Request) *Class {
 }
 
 func encodeError(w http.ResponseWriter, error string) {
-	err := map[string]string{ "error": error}
+	err := map[string]string{"error": error}
 	json.NewEncoder(w).Encode(&err)
 }
 
 /**
+    ========================
 	MongoDB Helper Functions
+    ========================
  */
 
 func (app *App) getCollection(collection string) *mongo.Collection {
@@ -121,7 +130,7 @@ func (app *App) getCollection(collection string) *mongo.Collection {
 
 func (app *App) insertOne(collection string, payload interface{}) *mongo.InsertOneResult {
 	log.Println("Inserting payload into collection " + collection)
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	result, err := app.getCollection(collection).InsertOne(ctx, payload)
 	checkError(err)
@@ -130,7 +139,7 @@ func (app *App) insertOne(collection string, payload interface{}) *mongo.InsertO
 
 func (app *App) findAll(collection string) *mongo.Cursor {
 	log.Println("Finding all from collection: " + collection)
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{}
 	findOpts := options.FindOptions{}
@@ -142,7 +151,7 @@ func (app *App) findAll(collection string) *mongo.Cursor {
 
 func (app *App) getById(collection string, bytes []byte) *mongo.SingleResult {
 	log.Println("Getting by id from " + collection + " with _id " + string(bytes))
-	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{"_id": string(bytes)}
 	findOpts := options.FindOneOptions{}
@@ -152,13 +161,16 @@ func (app *App) getById(collection string, bytes []byte) *mongo.SingleResult {
 }
 
 /***
+    ======================
 	Http Handler Functions
+    ======================
 
 	createClass - Will create a class with a specified "class-id"
 	getClass - Will retrieve a class by a "class-id"
+	classList - Will return all the current classes from the database
 	storeAttempt - Will store an attempt from a student to a specified class
     getAttemptsByDeviceId - Will receive attempts from a device based on its "device-id"
-
+    getDevices - Will return all the current devices from the database
  */
 
 func (app *App) createClass(w http.ResponseWriter, r *http.Request) {
@@ -173,6 +185,23 @@ func (app *App) createClass(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
 		encodeError(w, "A Class With That ID Already Exists.")
+	}
+}
+
+func (app *App) getClass(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	mongoResult := app.getById("classes", []byte(params["classId"]))
+	if mongoResult.Err() != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		encodeError(w, "A Class With That ID Doesn't Exists.")
+	} else {
+		class := Class{}
+		err := mongoResult.Decode(&class)
+		checkError(err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(class)
 	}
 }
 
@@ -193,49 +222,72 @@ func (app *App) classList(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(classList)
 }
 
-func (app *App) getClass(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	mongoResult := app.getById("classes", []byte(params["classId"]))
-	if mongoResult.Err() != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound)
-		encodeError(w, "A Class With That ID Doesn't Exists.")
-	} else {
-		class := Class{}
-		err := mongoResult.Decode(&class)
-		checkError(err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(class)
-	}
-}
-
 func (app *App) storeAttempt(w http.ResponseWriter, r *http.Request) {
-
+	params := mux.Vars(r)
+	deviceId := params["deviceId"]
+	mongoResult := app.getById("devices", []byte(deviceId))
+	device := Device{DeviceId: deviceId, Attempts: make([]Attempt, 0)}
+	if mongoResult.Err() == nil {
+		mongoResult.Decode(&device)
+	}
+	attempt := decodeAttempt(r)
+	device.Attempts = append(device.Attempts, *attempt)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	result := app.insertOne("devices", device)
+	json.NewEncoder(w).Encode(&result)
 }
 
 func (app *App) getAttemptsByDeviceId(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	deviceId := params["deviceId"]
+	mongoResult := app.getById("devices", []byte(deviceId))
+	if mongoResult.Err() != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound)
+		encodeError(w, "A Device With That ID Doesn't Exists.")
+	} else {
+		device := Device{}
+		err := mongoResult.Decode(&device)
+		checkError(err)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(device)
+	}
+}
+
+func (app *App) getDevices(w http.ResponseWriter, r *http.Request) {
+	mongoResult := app.findAll("devices")
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	defer mongoResult.Close(ctx)
+	devices := make([]Device, 0)
+	for mongoResult.Next(ctx) {
+		currDevice := Device{}
+		mongoResult.Decode(&currDevice)
+		devices = append(devices, currDevice)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(devices)
 }
 
 func (app *App) setUpRoutes() {
 	app.Router.HandleFunc("/class/", app.classList).Methods("GET")
 	app.Router.HandleFunc("/class/", app.createClass).Methods("POST")
 	app.Router.HandleFunc("/class/{classId}", app.getClass).Methods("GET")
+	app.Router.HandleFunc("/device/", app.getDevices).Methods("GET")
 	app.Router.HandleFunc("/device/{deviceId}/", app.storeAttempt).Methods("POST")
 	app.Router.HandleFunc("/device/{deviceId}/", app.getAttemptsByDeviceId).Methods("GET")
 }
 
 func main() {
-	//TODO: This is how I format time nicely in golag
-	//now := time.Now()
-	//var formatted string = now.Format(LAYOUT_US)
-	//fmt.Println(formatted)
 	envFlag := flag.String("env", "dev", "Your environment config to run: ( dev || prod )")
 	app := App{}
 	app.init(*envFlag)
 	app.runApplication()
 	defer func() {
-		ctx, _ := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
+		ctx, _ := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 		if err := app.MongoClient.Disconnect(ctx); err != nil {
 			panic(err)
 		}
