@@ -95,18 +95,6 @@ type Class struct {
 	Json Encoders / Decoders
  */
 
-func (app *App) jsonResponse(w http.ResponseWriter) {
-
-}
-
-func encodeAttempt(w http.ResponseWriter, toEncode Attempt) {
-	json.NewEncoder(w).Encode(&toEncode)
-}
-
-func encodeClass(w http.ResponseWriter, toEncode Class) {
-	json.NewEncoder(w).Encode(&toEncode)
-}
-
 func decodeAttempt(r *http.Request) *Attempt {
 	var toDecode Attempt
 	json.NewDecoder(r.Body).Decode(&toDecode)
@@ -175,10 +163,9 @@ func (app *App) getById(collection string, bytes []byte) *mongo.SingleResult {
  */
 
 func (app *App) createClass(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	mongoResult := app.getById("classes", []byte(params["classId"]))
+	classPayload := decodeClass(r)
+	mongoResult := app.getById("classes", []byte(classPayload.ClassId))
 	if mongoResult.Err() != nil {
-		classPayload := Class{ClassId: params["classId"], Devices: []Device{}}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)
 		result := app.insertOne("classes", classPayload)
@@ -233,7 +220,7 @@ func (app *App) getAttemptsByDeviceId(w http.ResponseWriter, r *http.Request) {
 
 func (app *App) setUpRoutes() {
 	app.Router.HandleFunc("/class/", app.classList).Methods("GET")
-	app.Router.HandleFunc("/class/{classId}", app.createClass).Methods("POST")
+	app.Router.HandleFunc("/class/", app.createClass).Methods("POST")
 	app.Router.HandleFunc("/class/{classId}", app.getClass).Methods("GET")
 	app.Router.HandleFunc("/device/{deviceId}/", app.storeAttempt).Methods("POST")
 	app.Router.HandleFunc("/device/{deviceId}/", app.getAttemptsByDeviceId).Methods("GET")
