@@ -120,13 +120,13 @@ func (app *App) getCollection(collection string) *mongo.Collection {
 	return app.MongoClient.Database(app.Config.DbName).Collection(collection)
 }
 
-func (app *App) insertOne(collection string, payload interface{}) mongo.InsertOneResult {
+func (app *App) insertOne(collection string, payload interface{}) *mongo.InsertOneResult {
 	log.Println("Inserting payload into collection " + collection)
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT * time.Second)
 	defer cancel()
 	result, err := app.getCollection(collection).InsertOne(ctx, payload)
 	checkError(err)
-	return *result
+	return result
 }
 
 func (app *App) findAll(collection string) *mongo.Cursor {
