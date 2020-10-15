@@ -31,9 +31,18 @@
   - This should produce an executable with the name "main"
   
  ## How to run the project
- >As an executable
+ ***As an executable***
+  - `./main -env=dev`
+  - `./main -env=prod`
  ---
- >From the main.go file
+ ***From the main.go file***
+  - `go run main.go -env=dev`
+  - `go run main.go -env=prod`
  ---
  # **efieldrestful api documentation**
-
+ ---
+ ## Api Models
+  ***Attempt Struct***
+  | Field Name | Description | Json Identifier |
+  | ----------- | ----------- | ----------- |
+  | address | This is the address the web server will bind to, the default value is "127.0.0.1" | 123234 |
