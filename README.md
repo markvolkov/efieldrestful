@@ -1,5 +1,5 @@
-# **efieldrestful documentation**
-
+# **efieldrestful project documentation**
+---
 ## How to get started and get set up with the proper configuration
 0. *[Download and setup mongodb](https://docs.mongodb.com/manual/administration/install-community/)*
 1. *[Download and install golang](https://golang.org/doc/install)*
@@ -34,4 +34,6 @@
  >As an executable
  ---
  >From the main.go file
- 
+ ---
+ # **efieldrestful api documentation**
+
