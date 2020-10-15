@@ -10,6 +10,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -85,8 +86,8 @@ type Attempt struct {
 }
 
 type Device struct {
-	DeviceId string `json:"_id,omitempty" bson:"_id,omitempty"`
-	//StudentName string `json:"studentName,omitempty" bson:"studentName,omitempty"` TODO: Not sure if we need this.
+	DeviceId uuid.UUID `json:"_id,omitempty" bson:"_id,omitempty"`
+	StudentName string `json:"student_name,omitempty" bson:"student_name,omitempty"`
 	Attempts []Attempt `json:"attempts,omitempty" bson:"attempts,omitempty"`
 }
 
@@ -226,7 +227,7 @@ func (app *App) storeAttempt(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	deviceId := params["deviceId"]
 	mongoResult := app.getById("devices", []byte(deviceId))
-	device := Device{DeviceId: deviceId, Attempts: make([]Attempt, 0)}
+	device := Device{DeviceId: uuid.New(), Attempts: make([]Attempt, 0)}
 	if mongoResult.Err() == nil {
 		mongoResult.Decode(&device)
 	}
@@ -283,8 +284,10 @@ func (app *App) setUpRoutes() {
 
 func main() {
 	envFlag := flag.String("env", "dev", "Your environment config to run: ( dev || prod )")
+	flag.Parse()
 	app := App{}
 	app.init(*envFlag)
+	log.Println(*envFlag)
 	app.runApplication()
 	defer func() {
 		ctx, _ := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
