@@ -2,5 +2,7 @@
   "port": "8080",
   "address": "127.0.0.1",
   "uri": "mongodb://localhost:27017",
-  "dbName": "efield-dev"
+  "dbName": "efield-dev",
+  "basicUsername": "test",
+  "basicPassword": "test"
 }
