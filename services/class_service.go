@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"efieldrestful/app"
 	"efieldrestful/db"
 	"efieldrestful/models"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -66,10 +65,10 @@ func StoreDeviceInClass(service db.DatabaseService, classId string, deviceId str
 	service.InsertOne(classesCollection, class)
 }
 
-func DeleteClassByAccessCode(app app.App, accessCode string) {
-	app.DatabaseService.DeleteOneByFieldMatches(classesCollection, "accessCode", accessCode)
+func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) {
+	service.DeleteOneByFieldMatches(classesCollection, "accessCode", accessCode)
 }
 
-func DeleteClassById(app app.App, classId string) {
-	app.DatabaseService.DeleteOneByFieldMatches(classesCollection, "_id", classId)
+func DeleteClassById(service db.DatabaseService, classId string) {
+	service.DeleteOneByFieldMatches(classesCollection, "_id", classId)
 }
