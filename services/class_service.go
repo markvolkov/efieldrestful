@@ -4,6 +4,7 @@ import (
 	"context"
 	"efieldrestful/db"
 	"efieldrestful/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
@@ -43,7 +44,9 @@ func GetClassFromAccessCode(service db.DatabaseService, accessCode string) *mode
 }
 
 func GetClassFromId(service db.DatabaseService, classId string) *models.Class {
-	 result := service.FieldMatchesString(classesCollection, "_id", classId)
+	 objectId, err := primitive.ObjectIDFromHex(classId)
+	 checkError(err)
+	 result := service.FieldMatchesString(classesCollection, "_id", objectId)
 	 if result.Err() != nil {
 	 	return nil
 	 } else {
@@ -70,5 +73,7 @@ func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) {
 }
 
 func DeleteClassById(service db.DatabaseService, classId string) {
-	service.DeleteOneByFieldMatches(classesCollection, "_id", classId)
+	objectId, err := primitive.ObjectIDFromHex(classId)
+	checkError(err)
+	service.DeleteOneByFieldMatches(classesCollection, "_id", objectId)
 }

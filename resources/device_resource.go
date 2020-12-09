@@ -7,29 +7,30 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"log"
 	"net/http"
 )
 
 func StoreAttempt(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-		if r.Body == nil {
+		if r.Body == http.NoBody {
 			mongoResult := &models.Device{DeviceId: primitive.NewObjectID(), Attempts: make([]models.Attempt, 0)}
 			result := services.StoreDevice(service, mongoResult)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(&result)
 		} else {
-			deviceDecoded := decodeDevice(r)
-			mongoResult := services.GetDeviceById(service, deviceDecoded.DeviceId.String())
+			attemptDecoded := decodeAttempt(r)
+			mongoResult := services.GetDeviceById(service, attemptDecoded.AttemptId.Hex())
 			if mongoResult == nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			attempt := decodeAttempt(r)
-			mongoResult.Attempts = append(mongoResult.Attempts, *attempt)
+			attemptDecoded.AttemptId = primitive.NewObjectID()
+			mongoResult.Attempts = append(mongoResult.Attempts, *attemptDecoded)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			result := services.StoreAttemptFromDevice(service, deviceDecoded.DeviceId.String(), *attempt)
+			result := services.StoreAttemptFromDevice(service, mongoResult.DeviceId.Hex(), *attemptDecoded)
 			json.NewEncoder(w).Encode(&result)
 		}
 	}
@@ -39,6 +40,7 @@ func GetAttemptsByDeviceId(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		deviceId := params["deviceId"]
+		log.Println(deviceId)
 		mongoResult := services.GetDeviceById(service, deviceId)
 		if mongoResult == nil {
 			w.Header().Set("Content-Type", "application/json")

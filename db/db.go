@@ -43,12 +43,12 @@ func (service *DatabaseService) FilterMany(collection string, filter bson.M) *mo
 	return result
 }
 
-func (service *DatabaseService) FieldMatchesString(collection string, field string, matches string) *mongo.SingleResult {
+func (service *DatabaseService) FieldMatchesString(collection string, field string, matches interface{}) *mongo.SingleResult {
 	log.Println("Trying to filter by field " + field)
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if len(field) > 0 && len(matches) > 0 {
+	if len(field) > 0 {
 		filter = bson.M{ field: matches }
 	}
 	findOpts := options.FindOneOptions{}
@@ -57,12 +57,12 @@ func (service *DatabaseService) FieldMatchesString(collection string, field stri
 	return result
 }
 
-func (service *DatabaseService) FindByFieldMatchesString(collection string, field string, matches string) *mongo.Cursor {
+func (service *DatabaseService) FindByFieldMatchesString(collection string, field string, matches interface{}) *mongo.Cursor {
 	log.Println("Trying to find all by field " + field)
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if len(field) > 0 && len(matches) > 0 {
+	if len(field) > 0 {
 		filter = bson.M{ field: matches }
 	}
 	findOpts := options.FindOptions{}
@@ -81,6 +81,19 @@ func (service *DatabaseService) InsertOne(collection string, payload interface{}
 	return result
 }
 
+func (service *DatabaseService) UpdateOne(collection string, filter interface{}, payload interface{}) *mongo.UpdateResult {
+	log.Println("Inserting payload into collection " + collection)
+	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
+	defer cancel()
+	result, err := service.GetCollection(collection).UpdateOne(ctx, filter, bson.D{
+		{
+			"$set", payload,
+		},
+	}, nil)
+	checkError(err)
+	return result
+}
+
 func (service *DatabaseService) FindAll(collection string) *mongo.Cursor {
 	log.Println("Finding all from collection: " + collection)
 	return service.FindByFieldMatchesString(collection, "", "")
@@ -91,12 +104,12 @@ func (service *DatabaseService) GetById(collection string, id string) *mongo.Sin
 	return service.FieldMatchesString(collection, "_id", id)
 }
 
-func (service *DatabaseService) DeleteOneByFieldMatches(collection string, field string, matches string) *mongo.DeleteResult {
-	log.Println("Deleting one by " + field + " from " + collection + " with " + field + "=" + matches)
+func (service *DatabaseService) DeleteOneByFieldMatches(collection string, field string, matches interface{}) *mongo.DeleteResult {
+	log.Println("Deleting one by " + field + " from " + collection + " with " + field)
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if len(field) > 0 && len(matches) > 0 {
+	if len(field) > 0 {
 		filter = bson.M{ field: matches }
 	}
 	result, err := service.GetCollection(collection).DeleteOne(ctx, filter)
@@ -104,12 +117,12 @@ func (service *DatabaseService) DeleteOneByFieldMatches(collection string, field
 	return result
 }
 
-func (service *DatabaseService) DeleteManyByFieldMatches(collection string, field string, matches string) *mongo.DeleteResult {
-	log.Println("Deleting many by " + field + " from " + collection + " with " + field + "=" + matches)
+func (service *DatabaseService) DeleteManyByFieldMatches(collection string, field string, matches interface{}) *mongo.DeleteResult {
+	log.Println("Deleting many by " + field + " from " + collection + " with " + field)
 	ctx, cancel := context.WithTimeout(context.Background(), TIMEOUT*time.Second)
 	defer cancel()
 	filter := bson.M{}
-	if len(field) > 0 && len(matches) > 0 {
+	if len(field) > 0 {
 		filter = bson.M{ field: matches }
 	}
 	result, err := service.GetCollection(collection).DeleteMany(ctx, filter)

@@ -4,6 +4,8 @@ import (
 	"context"
 	"efieldrestful/db"
 	"efieldrestful/models"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"time"
@@ -43,29 +45,34 @@ func GetDevicesByStudentName(service db.DatabaseService, studentName string) []m
 }
 
 func GetDeviceById(service db.DatabaseService, id string) *models.Device {
-	result := service.FieldMatchesString(devicesCollection, "_id", id)
+	objectId, err := primitive.ObjectIDFromHex(id)
+	checkError(err)
+	result := service.FieldMatchesString(devicesCollection, "_id", objectId)
 	if result.Err() != nil {
 		return nil
 	}
 	device := models.Device{}
-	err := result.Decode(&device)
+	err = result.Decode(&device)
 	checkError(err)
 	return &device
 }
 
 
 func StoreDevice(service db.DatabaseService, device *models.Device) *mongo.InsertOneResult {
-	if GetDeviceById(service, device.DeviceId.String()) == nil {
+	log.Println("Storing new device")
+	if GetDeviceById(service, device.DeviceId.Hex()) == nil {
 		return service.InsertOne(devicesCollection, device)
 	}
 	return nil
 }
 
-func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt models.Attempt) *mongo.InsertOneResult {
+func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt models.Attempt) *mongo.UpdateResult {
 	device := GetDeviceById(service, deviceId)
 	if device != nil {
 		device.Attempts = append(device.Attempts, attempt)
-		return service.InsertOne(devicesCollection, device)
+		objectId, err := primitive.ObjectIDFromHex(deviceId)
+		checkError(err)
+		return service.UpdateOne(devicesCollection, bson.M{"_id": objectId }, device)
 	} else {
 		log.Println("There device was not found, could not store attempt for device id: " + deviceId)
 		return nil
@@ -73,7 +80,9 @@ func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt
 }
 
 func DeleteDeviceById(service db.DatabaseService, deviceId string) {
-	service.DeleteOneByFieldMatches(deviceId, "_id", deviceId)
+	objectId, err := primitive.ObjectIDFromHex(deviceId)
+	checkError(err)
+	service.DeleteOneByFieldMatches(deviceId, "_id", objectId)
 }
 
 func checkError(err error) {

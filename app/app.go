@@ -64,13 +64,13 @@ func (app *App) Init(env string) {
 
 func (app *App) setUpRoutes() {
 	//class handlers
-	app.Router.HandleFunc("/class/", resources.ClassList(app.DatabaseService)).Methods("GET")
 	app.Router.HandleFunc("/class/", resources.CreateClass(app.DatabaseService)).Methods("POST")
+	app.Router.HandleFunc("/class/", resources.ClassList(app.DatabaseService)).Methods("GET")
 	app.Router.HandleFunc("/class/{classId}", resources.GetClass(app.DatabaseService)).Methods("GET")
 
 	//device handlers
-	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET")
 	app.Router.HandleFunc("/device/", resources.StoreAttempt(app.DatabaseService)).Methods("POST")
+	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET")
 	app.Router.HandleFunc("/device/{deviceId}/", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET")
 
 	//TODO: instructor handlers
