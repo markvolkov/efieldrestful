@@ -3,7 +3,6 @@ package resources
 import (
 	"efieldrestful/models"
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -25,14 +24,16 @@ func decodeClass(r *http.Request) *models.Class {
 	return &toDecode
 }
 
+
+func decodeDevice(r *http.Request) *models.Device {
+	var toDecode models.Device
+	json.NewDecoder(r.Body).Decode(&toDecode)
+	return &toDecode
+}
+
+
 func encodeError(w http.ResponseWriter, error string, status int) {
 	http.Error(w, error, status)
 }
 
-
-func checkError(err error) {
-	if err != nil {
-		log.Fatalf("Fatal error: %s", err.Error())
-	}
-}
 

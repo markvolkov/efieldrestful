@@ -53,6 +53,14 @@ func GetDeviceById(service db.DatabaseService, id string) *models.Device {
 	return &device
 }
 
+
+func StoreDevice(service db.DatabaseService, device *models.Device) *mongo.InsertOneResult {
+	if GetDeviceById(service, device.DeviceId.String()) == nil {
+		return service.InsertOne(devicesCollection, device)
+	}
+	return nil
+}
+
 func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt models.Attempt) *mongo.InsertOneResult {
 	device := GetDeviceById(service, deviceId)
 	if device != nil {

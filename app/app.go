@@ -70,7 +70,7 @@ func (app *App) setUpRoutes() {
 
 	//device handlers
 	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET")
-	app.Router.HandleFunc("/device/{deviceId}/", resources.StoreAttempt(app.DatabaseService)).Methods("POST")
+	app.Router.HandleFunc("/device/", resources.StoreAttempt(app.DatabaseService)).Methods("POST")
 	app.Router.HandleFunc("/device/{deviceId}/", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET")
 
 	//TODO: instructor handlers
