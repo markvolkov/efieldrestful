@@ -51,7 +51,6 @@ func ClassList(service db.DatabaseService) http.HandlerFunc {
 	}
 }
 
-
 func GetDevicesFromClass(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 
