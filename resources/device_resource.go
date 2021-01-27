@@ -63,3 +63,16 @@ func GetDevices(service db.DatabaseService) http.HandlerFunc {
 	}
 }
 
+func GetDevicesByStudentName(service db.DatabaseService) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+
+
+func DeleteDeviceById(service db.DatabaseService) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+
+	}
+}
+

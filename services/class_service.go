@@ -45,7 +45,9 @@ func GetClassFromAccessCode(service db.DatabaseService, accessCode string) *mode
 
 func GetClassFromId(service db.DatabaseService, classId string) *models.Class {
 	 objectId, err := primitive.ObjectIDFromHex(classId)
-	 checkError(err)
+	 if err != nil {
+	 	return nil
+	 }
 	 result := service.FieldMatchesString(classesCollection, "_id", objectId)
 	 if result.Err() != nil {
 	 	return nil
@@ -74,6 +76,8 @@ func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) {
 
 func DeleteClassById(service db.DatabaseService, classId string) {
 	objectId, err := primitive.ObjectIDFromHex(classId)
-	checkError(err)
+	if err != nil {
+		return
+	}
 	service.DeleteOneByFieldMatches(classesCollection, "_id", objectId)
 }

@@ -36,7 +36,7 @@ type AppConfig struct {
 }
 
 func readValues(env string) AppConfig {
-	envFile, err := os.Open("./config/config." + strings.ToLower(env) + ".json")
+	envFile, err := os.Open("config/config." + strings.ToLower(env) + ".json")
 	checkError(err)
 	appConfig := AppConfig{}
 	json.NewDecoder(envFile).Decode(&appConfig)
@@ -64,19 +64,19 @@ func (app *App) Init(env string) {
 
 func (app *App) setUpRoutes() {
 	//class handlers
-	app.Router.HandleFunc("/class/", resources.CreateClass(app.DatabaseService)).Methods("POST")
-	app.Router.HandleFunc("/class/", resources.ClassList(app.DatabaseService)).Methods("GET")
-	app.Router.HandleFunc("/class/{classId}", resources.GetClass(app.DatabaseService)).Methods("GET")
+	app.Router.HandleFunc("/class/", resources.CreateClass(app.DatabaseService)).Methods("POST", "OPTIONS")
+	app.Router.HandleFunc("/class/", resources.ClassList(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/class/{classId}", resources.GetClass(app.DatabaseService)).Methods("GET", "OPTIONS")
 
 	//device handlers
-	app.Router.HandleFunc("/device/", resources.StoreAttempt(app.DatabaseService)).Methods("POST")
-	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET")
-	app.Router.HandleFunc("/device/{deviceId}/", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET")
+	app.Router.HandleFunc("/device/", resources.StoreAttempt(app.DatabaseService)).Methods("POST", "OPTIONS")
+	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/device/{deviceId}/", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET", "OPTIONS")
 
 	//TODO: instructor handlers
-	//app.Router.HandleFunc("/instructor/", app.getDevices).Methods("GET")
-	//app.Router.HandleFunc("/instructor/{institution}/", app.storeAttempt).Methods("GET")
-	//app.Router.HandleFunc("/instructor/{instructorId}/", app.getAttemptsByDeviceId).Methods("GET")
+	//app.Router.HandleFunc("/instructor/", app.getDevices).Methods("GET", "OPTIONS")
+	//app.Router.HandleFunc("/instructor/{institution}/", app.storeAttempt).Methods("GET", "OPTIONS")
+	//app.Router.HandleFunc("/instructor/{instructorId}/", app.getAttemptsByDeviceId).Methods("GET", "OPTIONS")
 
 	//authentication middleware
 	app.Router.Use(app.checkAuthenicationMiddleware)
@@ -84,6 +84,14 @@ func (app *App) setUpRoutes() {
 
 func (app *App) checkAuthenicationMiddleware(nextRequest http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, UPDATE, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Requested-With, Host, Accept, Authorization")
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
 		user, pass, _ := r.BasicAuth()
 		authenticated := encrypt.CheckData([]byte(app.Config.BasicUsername), []byte(user)) && encrypt.CheckData([]byte(app.Config.BasicPassword), []byte(pass))
 		if !authenticated {
@@ -102,6 +110,7 @@ func (app *App) RunApplication() {
 		WriteTimeout: (TIMEOUT * 1.5) * time.Second,
 		ReadTimeout:  (TIMEOUT * 1.5) * time.Second,
 	}
+	app.Router.Use(mux.CORSMethodMiddleware(app.Router))
 	log.Fatal(server.ListenAndServe())
 }
 

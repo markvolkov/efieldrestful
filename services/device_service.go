@@ -46,7 +46,9 @@ func GetDevicesByStudentName(service db.DatabaseService, studentName string) []m
 
 func GetDeviceById(service db.DatabaseService, id string) *models.Device {
 	objectId, err := primitive.ObjectIDFromHex(id)
-	checkError(err)
+	if err != nil {
+		return nil
+	}
 	result := service.FieldMatchesString(devicesCollection, "_id", objectId)
 	if result.Err() != nil {
 		return nil
@@ -71,7 +73,9 @@ func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt
 	if device != nil {
 		device.Attempts = append(device.Attempts, attempt)
 		objectId, err := primitive.ObjectIDFromHex(deviceId)
-		checkError(err)
+		if err != nil {
+			return nil
+		}
 		return service.UpdateOne(devicesCollection, bson.M{"_id": objectId }, device)
 	} else {
 		log.Println("There device was not found, could not store attempt for device id: " + deviceId)
@@ -81,10 +85,14 @@ func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt
 
 func DeleteDeviceById(service db.DatabaseService, deviceId string) {
 	objectId, err := primitive.ObjectIDFromHex(deviceId)
-	checkError(err)
+	if err != nil {
+		return
+	}
 	service.DeleteOneByFieldMatches(deviceId, "_id", objectId)
 }
 
+//TODO: Make sure I haven't made this call stupidly anywhere else
+//This is a fatal call, make sure not to use on errors that are non fatal ie: parsing values or reading / writing to the database
 func checkError(err error) {
 	if err != nil {
 		log.Fatalf("Fatal error: %s", err.Error())
