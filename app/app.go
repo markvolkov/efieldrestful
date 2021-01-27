@@ -119,7 +119,7 @@ func (app *App) RunApplication() {
 
 func checkError(err error) {
 	if err != nil {
-		log.Fatalf("Fatal error: %s", err.Error())
+		log.Printf("Error: %s\n", err.Error())
 	}
 }
 

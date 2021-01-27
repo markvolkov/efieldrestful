@@ -91,10 +91,8 @@ func DeleteDeviceById(service db.DatabaseService, deviceId string) {
 	service.DeleteOneByFieldMatches(deviceId, "_id", objectId)
 }
 
-//TODO: Make sure I haven't made this call stupidly anywhere else
-//This is a fatal call, make sure not to use on errors that are non fatal ie: parsing values or reading / writing to the database
 func checkError(err error) {
 	if err != nil {
-		log.Fatalf("Fatal error: %s", err.Error())
+		log.Printf("Fatal error: %s\n", err.Error())
 	}
 }
