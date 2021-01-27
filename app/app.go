@@ -63,6 +63,9 @@ func (app *App) Init(env string) {
 }
 
 func (app *App) setUpRoutes() {
+	//leaderboard handlers usage GET /leaderboard?limit=10&level=1&track=1&global=false/
+	app.Router.HandleFunc("/leaderboard/", resources.GetLeaderBoard(app.DatabaseService)).Methods("GET", "OPTIONS")
+
 	//class handlers
 	app.Router.HandleFunc("/class/", resources.CreateClass(app.DatabaseService)).Methods("POST", "OPTIONS")
 	app.Router.HandleFunc("/class/", resources.ClassList(app.DatabaseService)).Methods("GET", "OPTIONS")
