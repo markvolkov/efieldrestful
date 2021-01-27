@@ -40,9 +40,4 @@
   - `go run main.go -env=prod`
  ---
  # **efieldrestful api documentation**
- ---
- ## Api Models
-  ***Attempt Struct***
-  | Field Name | Description | Json Identifier |
-  | ----------- | ----------- | ----------- |
-  | address | This is the address the web server will bind to, the default value is "127.0.0.1" | 123234 |
+ # markvolkov.github.io
