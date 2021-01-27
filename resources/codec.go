@@ -24,7 +24,6 @@ func decodeClass(r *http.Request) *models.Class {
 	return &toDecode
 }
 
-
 func decodeDevice(r *http.Request) *models.Device {
 	var toDecode models.Device
 	json.NewDecoder(r.Body).Decode(&toDecode)
