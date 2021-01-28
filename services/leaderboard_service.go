@@ -5,10 +5,11 @@ import (
 	"efieldrestful/models"
 )
 
-func GetLeaderBoard(service db.DatabaseService, level string, track string, limit int, isGlobal bool) models.LeaderBoard{
-	if isGlobal {
+func GetGlobalLeaderBoard(service db.DatabaseService, level string, track string, limit int) models.LeaderBoard{
 
-	} else {
+}
 
-	}
+
+func GetClassLeaderBoard(service db.DatabaseService, level string, track string, limit int, deviceId string) models.LeaderBoard{
+
 }

@@ -30,6 +30,12 @@ func decodeDevice(r *http.Request) *models.Device {
 	return &toDecode
 }
 
+func encodeLeaderboard(leaderBoard models.LeaderBoard, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(leaderBoard)
+}
+
 
 func encodeError(w http.ResponseWriter, error string, status int) {
 	http.Error(w, error, status)

@@ -3,7 +3,6 @@ package resources
 import (
 	"efieldrestful/db"
 	"efieldrestful/services"
-	"encoding/json"
 	"net/http"
 	"strconv"
 )
@@ -27,9 +26,13 @@ func GetLeaderBoard(service db.DatabaseService) http.HandlerFunc {
 			return
 		}
 
-		leaderBoard := services.GetLeaderBoard(service, level, track, limit, isGlobal)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(leaderBoard)
+		if isGlobal {
+			leaderBoard := services.GetGlobalLeaderBoard(service, level, track, limit)
+			encodeLeaderboard(leaderBoard, w)
+		} else {
+			deviceId := r.URL.Query().Get("device_id")
+			leaderBoard := services.GetClassLeaderBoard(service, level, track, limit, deviceId)
+			encodeLeaderboard(leaderBoard, w)
+		}
 	}
 }
