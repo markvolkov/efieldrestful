@@ -4,6 +4,7 @@ import (
 	"context"
 	"efieldrestful/db"
 	"efieldrestful/models"
+	"go.mongodb.org/mongo-driver/mongo"
 	"time"
 )
 
@@ -51,6 +52,6 @@ func GetInstructorFromId(service db.DatabaseService, instructorId string) *model
 	}
 }
 
-func DeleteInstructorById(service db.DatabaseService, instructorId string) {
-	service.DeleteOneByFieldMatches(instructorCollection, "_id", instructorId)
+func DeleteInstructorById(service db.DatabaseService, instructorId string) *mongo.DeleteResult {
+	return service.DeleteOneByFieldMatches(instructorCollection, "_id", instructorId)
 }
