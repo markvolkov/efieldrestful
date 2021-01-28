@@ -83,12 +83,12 @@ func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt
 	}
 }
 
-func DeleteDeviceById(service db.DatabaseService, deviceId string) {
+func DeleteDeviceById(service db.DatabaseService, deviceId string) (error, *mongo.DeleteResult) {
 	objectId, err := primitive.ObjectIDFromHex(deviceId)
 	if err != nil {
-		return
+		return err, nil
 	}
-	service.DeleteOneByFieldMatches(deviceId, "_id", objectId)
+	return nil, service.DeleteOneByFieldMatches(deviceId, "_id", objectId)
 }
 
 func checkError(err error) {

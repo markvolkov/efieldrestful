@@ -4,6 +4,7 @@ import (
 	"context"
 	"efieldrestful/db"
 	"efieldrestful/models"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"time"
@@ -32,7 +33,7 @@ func SaveClass(service db.DatabaseService, classPayload *models.Class) *mongo.In
 }
 
 func GetClassFromAccessCode(service db.DatabaseService, accessCode string) *models.Class {
-	 result := service.FieldMatchesString(classesCollection, "accessCode", accessCode)
+	 result := service.FieldMatchesString(classesCollection, "access_code", accessCode)
 	 if result.Err() != nil {
 	 	return nil
 	 } else {
@@ -63,21 +64,21 @@ func GetDevicesFromClass(service db.DatabaseService, classId string) []models.De
 	return GetClassFromId(service, classId).Devices
 }
 
-func StoreDeviceInClass(service db.DatabaseService, classId string, deviceId string) {
+func StoreDeviceInClass(service db.DatabaseService, classId string, deviceId string) *mongo.UpdateResult {
 	class := GetClassFromId(service, classId)
 	deviceToAdd := GetDeviceById(service, deviceId)
 	class.Devices = append(class.Devices, *deviceToAdd)
-	service.InsertOne(classesCollection, class)
+	return service.UpdateOne(classesCollection, bson.M{"_id": classId },  class)
 }
 
-func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) {
-	service.DeleteOneByFieldMatches(classesCollection, "accessCode", accessCode)
+func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) *mongo.DeleteResult {
+	return service.DeleteOneByFieldMatches(classesCollection, "access_code", accessCode)
 }
 
-func DeleteClassById(service db.DatabaseService, classId string) {
+func DeleteClassById(service db.DatabaseService, classId string) *mongo.DeleteResult {
 	objectId, err := primitive.ObjectIDFromHex(classId)
 	if err != nil {
 		return
 	}
-	service.DeleteOneByFieldMatches(classesCollection, "_id", objectId)
+	return service.DeleteOneByFieldMatches(classesCollection, "_id", objectId)
 }

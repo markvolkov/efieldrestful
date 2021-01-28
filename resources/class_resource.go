@@ -53,24 +53,50 @@ func ClassList(service db.DatabaseService) http.HandlerFunc {
 
 func GetDevicesFromClass(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		mongoResult := services.GetDevicesFromClass(service, params["class_id"])
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
+	}
+}
 
+func GetClassFromAccessCode(service db.DatabaseService) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		mongoResult := services.GetClassFromAccessCode(service, params["access_code"])
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
 	}
 }
 
 func StoreDeviceInClass(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-
+		params := mux.Vars(r)
+		mongoResult := services.StoreDeviceInClass(service, params["class_id"], params["device_id"])
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
 	}
 }
 
 func DeleteClassByAccessCode(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-
+		params := mux.Vars(r)
+		mongoResult := services.DeleteClassByAccessCode(service, params["access_code"])
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
 	}
 }
 
 func DeleteClassById(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-
+		params := mux.Vars(r)
+		mongoResult := services.DeleteClassById(service, params["class_id"])
+		w.Header().Set("Contemt-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
 	}
 }

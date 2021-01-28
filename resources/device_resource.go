@@ -65,14 +65,26 @@ func GetDevices(service db.DatabaseService) http.HandlerFunc {
 
 func GetDevicesByStudentName(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-
+		params := mux.Vars(r)
+		mongoResult := services.GetDevicesByStudentName(service, params["student_name"])
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(mongoResult)
 	}
 }
 
 
 func DeleteDeviceById(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
-
+		params := mux.Vars(r)
+		err, mongoResult := services.DeleteDeviceById(service, params["device_id"])
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(mongoResult)
+		}
 	}
 }
 
