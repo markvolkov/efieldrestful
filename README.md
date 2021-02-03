@@ -41,5 +41,5 @@
  ---
  # **efieldrestful api documentation**
  # markvolkov.github.io
- # Overview
+ # Overview of project
  ![alt text](https://github.com/markvolkov/efieldrestful/blob/master/PhysicsSoftwareTechnicalDesign.jpg)
