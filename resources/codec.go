@@ -24,13 +24,19 @@ func decodeClass(r *http.Request) *models.Class {
 	return &toDecode
 }
 
+func decodeStudentName(r *http.Request) *models.UpdateDeviceNamePayload {
+	var toDecode models.UpdateDeviceNamePayload
+	json.NewDecoder(r.Body).Decode(&toDecode)
+	return &toDecode
+}
+
 func decodeDevice(r *http.Request) *models.Device {
 	var toDecode models.Device
 	json.NewDecoder(r.Body).Decode(&toDecode)
 	return &toDecode
 }
 
-func encodeLeaderboard(leaderBoard models.LeaderBoard, w http.ResponseWriter) {
+func encodeLeaderboard(leaderBoard *models.LeaderBoard, w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(leaderBoard)

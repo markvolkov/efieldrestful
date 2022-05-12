@@ -60,14 +60,13 @@ func GetClassFromId(service db.DatabaseService, classId string) *models.Class {
 	 }
 }
 
-func GetDevicesFromClass(service db.DatabaseService, classId string) []models.Device {
+func GetDevicesFromClass(service db.DatabaseService, classId string) []string {
 	return GetClassFromId(service, classId).Devices
 }
 
 func StoreDeviceInClass(service db.DatabaseService, classId string, deviceId string) *mongo.UpdateResult {
 	class := GetClassFromId(service, classId)
-	deviceToAdd := GetDeviceById(service, deviceId)
-	class.Devices = append(class.Devices, *deviceToAdd)
+	class.Devices = append(class.Devices, deviceId)
 	return service.UpdateOne(classesCollection, bson.M{"_id": classId },  class)
 }
 
@@ -78,7 +77,7 @@ func DeleteClassByAccessCode(service db.DatabaseService, accessCode string) *mon
 func DeleteClassById(service db.DatabaseService, classId string) *mongo.DeleteResult {
 	objectId, err := primitive.ObjectIDFromHex(classId)
 	if err != nil {
-		return
+		return nil
 	}
 	return service.DeleteOneByFieldMatches(classesCollection, "_id", objectId)
 }

@@ -7,13 +7,12 @@ import (
 	"strconv"
 )
 
-//leaderboard handlers usage GET /leaderboard?limit=10&level=1&track=1&global=false/
+//leaderboard handlers usage GET /leaderboard?limit=10&level=&global=false/
 func GetLeaderBoard(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		level := r.URL.Query().Get("level")
-		track := r.URL.Query().Get("track")
 		limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
-
+		//log.Println(level, limit)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -27,11 +26,11 @@ func GetLeaderBoard(service db.DatabaseService) http.HandlerFunc {
 		}
 
 		if isGlobal {
-			leaderBoard := services.GetGlobalLeaderBoard(service, level, track, limit)
+			leaderBoard := services.GetGlobalLeaderBoard(service, level, limit)
 			encodeLeaderboard(leaderBoard, w)
 		} else {
 			deviceId := r.URL.Query().Get("device_id")
-			leaderBoard := services.GetClassLeaderBoard(service, level, track, limit, deviceId)
+			leaderBoard := services.GetClassLeaderBoard(service, level, limit, deviceId)
 			encodeLeaderboard(leaderBoard, w)
 		}
 	}

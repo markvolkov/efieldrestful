@@ -11,6 +11,7 @@ import (
 	"net/http"
 )
 
+
 func StoreAttempt(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		if r.Body == http.NoBody {
@@ -60,6 +61,29 @@ func GetDevices(service db.DatabaseService) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(mongoResult)
+	}
+}
+
+func UpdateStudentName(service db.DatabaseService) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+		params := mux.Vars(r)
+		deviceId := params["deviceId"]
+		mongoResult := services.GetDeviceById(service, deviceId)
+		if mongoResult == nil {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			encodeError(w, "A Device With That ID Doesn't Exists.", http.StatusBadRequest)
+		} else {
+			//update student name after decoding name payload
+			deviceUpdate := decodeStudentName(r)
+			updateResponse := services.UpdateDeviceName(service, mongoResult.DeviceId.Hex(), deviceUpdate.StudentName)
+			log.Println("Updating student-name for device-id: " + deviceId + " to " + deviceUpdate.StudentName)
+			updateResponse = services.UpdateDeviceClassName(service, mongoResult.DeviceId.Hex(), deviceUpdate.ClassName)
+			log.Println("Updating class-name for device-id: " + deviceId + " to " + deviceUpdate.ClassName)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(updateResponse)
+		}
 	}
 }
 

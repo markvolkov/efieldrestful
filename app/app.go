@@ -64,7 +64,7 @@ func (app *App) Init(env string) {
 
 func (app *App) setUpRoutes() {
 	//leaderboard handlers usage GET /leaderboard?limit=10&level=1&track=1&global=false/
-	app.Router.HandleFunc("/leaderboard/", resources.GetLeaderBoard(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/leaderboard", resources.GetLeaderBoard(app.DatabaseService)).Methods("GET", "OPTIONS")
 
 	//class handlers
 	app.Router.HandleFunc("/class/", resources.CreateClass(app.DatabaseService)).Methods("POST", "OPTIONS")
@@ -73,13 +73,16 @@ func (app *App) setUpRoutes() {
 
 	//device handlers
 	app.Router.HandleFunc("/device/", resources.StoreAttempt(app.DatabaseService)).Methods("POST", "OPTIONS")
+	//TODO: Update device with student name
+	app.Router.HandleFunc("/device/{deviceId}", resources.UpdateStudentName(app.DatabaseService)).Methods("PUT", "OPTIONS")
 	app.Router.HandleFunc("/device/", resources.GetDevices(app.DatabaseService)).Methods("GET", "OPTIONS")
-	app.Router.HandleFunc("/device/{deviceId}/", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/device/{deviceId}", resources.GetAttemptsByDeviceId(app.DatabaseService)).Methods("GET", "OPTIONS")
 
 	//TODO: instructor handlers
-	//app.Router.HandleFunc("/instructor/", app.getDevices).Methods("GET", "OPTIONS")
-	//app.Router.HandleFunc("/instructor/{institution}/", app.storeAttempt).Methods("GET", "OPTIONS")
-	//app.Router.HandleFunc("/instructor/{instructorId}/", app.getAttemptsByDeviceId).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/instructor/", resources.GetAllInstructors(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/instructor/{institution}", resources.GetInstructorsByInstitution(app.DatabaseService)).Methods("GET", "OPTIONS")
+	app.Router.HandleFunc("/instructor/{instructorId}", resources.GetInstructorFromId(app.DatabaseService)).Methods("GET", "OPTIONS")
+	//app.Router.HandleFunc("/instructor/{instructorId}/", resources.StoreInstructor(app.DatabaseService)).Methods("POST", "OPTIONS")
 
 	//authentication middleware
 	app.Router.Use(app.checkAuthenicationMiddleware)
@@ -88,7 +91,7 @@ func (app *App) setUpRoutes() {
 func (app *App) checkAuthenicationMiddleware(nextRequest http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, UPDATE, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, UPDATE, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Origin, Content-Type, X-Requested-With, Host, Accept, Authorization")
 
 		if r.Method == "OPTIONS" {
@@ -106,7 +109,7 @@ func (app *App) checkAuthenicationMiddleware(nextRequest http.Handler) http.Hand
 }
 
 func (app *App) RunApplication() {
-	log.Println("Listening @ http://" + app.Config.AppAddress + ":" + app.Config.AppPort)
+	log.Println("Listening @ https://" + app.Config.AppAddress + ":" + app.Config.AppPort)
 	server := &http.Server{
 		Handler:      app.Router,
 		Addr:         app.Config.AppAddress + ":" + app.Config.AppPort,
@@ -114,7 +117,7 @@ func (app *App) RunApplication() {
 		ReadTimeout:  (TIMEOUT * 1.5) * time.Second,
 	}
 	app.Router.Use(mux.CORSMethodMiddleware(app.Router))
-	log.Fatal(server.ListenAndServe())
+	log.Fatal(server.ListenAndServeTLS("localhost.crt", "localhost.key"))
 }
 
 func checkError(err error) {

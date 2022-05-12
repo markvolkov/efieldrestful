@@ -68,6 +68,36 @@ func StoreDevice(service db.DatabaseService, device *models.Device) *mongo.Inser
 	return nil
 }
 
+func UpdateDeviceName(service db.DatabaseService, deviceId string, studentName string) *mongo.UpdateResult {
+	device := GetDeviceById(service, deviceId)
+	if device != nil {
+		device.StudentName = studentName
+		objectId, err := primitive.ObjectIDFromHex(deviceId)
+		if err != nil {
+			return nil
+		}
+		return service.UpdateOne(devicesCollection, bson.M{"_id": objectId }, bson.D{{"student_name", studentName}})
+	} else {
+		log.Println("There device was not found, could not change name for device id: " + deviceId)
+		return nil
+	}
+}
+
+func UpdateDeviceClassName(service db.DatabaseService, deviceId string, className string) *mongo.UpdateResult {
+	device := GetDeviceById(service, deviceId)
+	if device != nil {
+		device.ClassName = className
+		objectId, err := primitive.ObjectIDFromHex(deviceId)
+		if err != nil {
+			return nil
+		}
+		return service.UpdateOne(devicesCollection, bson.M{"_id": objectId }, bson.D{{"class_name", className}})
+	} else {
+		log.Println("There device was not found, could not change name for device id: " + deviceId)
+		return nil
+	}
+}
+
 func StoreAttemptFromDevice(service db.DatabaseService, deviceId string, attempt models.Attempt) *mongo.UpdateResult {
 	device := GetDeviceById(service, deviceId)
 	if device != nil {

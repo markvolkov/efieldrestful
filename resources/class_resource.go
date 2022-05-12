@@ -95,7 +95,7 @@ func DeleteClassById(service db.DatabaseService) http.HandlerFunc {
 	return func (w http.ResponseWriter, r *http.Request) {
 		params := mux.Vars(r)
 		mongoResult := services.DeleteClassById(service, params["class_id"])
-		w.Header().Set("Contemt-Type", "application/json")
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(mongoResult)
 	}
